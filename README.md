@@ -1,7 +1,7 @@
 # DCS Miz Editor
 
 <p align="center">
-  <img src="assets/app-icon.png" width="128" alt="DCS Miz Editor Apache icon">
+  <img src="assets/apache-showcase.jpg" alt="Apache helicopter showcase">
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ## Showcase
 
-The screenshots below were taken from a local copy of `M04.miz` from the MAD AH-64D campaign, with only the displayed mission name changed to `Operation Apache Forge` for the showcase. The mission file itself is not included in this repository.
+The screenshots below show a local showcase mission renamed to `Operation Apache Forge` for presentation. Mission payload files are not included in this repository.
 
 ### Briefing And Localization
 
@@ -38,7 +38,7 @@ Audio files are listed from `l10n/<locale>` and `mapResource`. Replacing a resou
 
 ![Trigger and task action scan](docs/assets/screenshots/04-triggers.png)
 
-Many DCS campaign missions do not store most logic as simple classic triggers. MizEdit recursively scans route/task tables and shows actions such as `ComboTask`, `WrappedAction`, `TransmitMessage`, `SetFrequency`, `Script`, `EngageTargets` and other nested mission logic. The M04 showcase mission exposes 492 route/task actions.
+Many DCS missions do not store most logic as simple classic triggers. MizEdit recursively scans route/task tables and shows actions such as `ComboTask`, `WrappedAction`, `TransmitMessage`, `SetFrequency`, `Script`, `EngageTargets` and other nested mission logic.
 
 ### Radio Subtitle Editing
 
@@ -125,15 +125,6 @@ Open a mission directly:
 ```powershell
 dotnet run --project "mizedit.csproj" -- "C:\path\to\mission.miz"
 ```
-
-## Tested On Real Missions
-
-Functional tests were run on local copies of real DCS campaign missions:
-
-- MAD AH-64D `M04.miz`: `DEFAULT`/`RU` locales, ext loader data preserved, 79 radio `TransmitMessage` actions and 492 route/task actions detected.
-- A-10C Outpost `M3OUTPOSTA10.miz`: added/replaced audio, images, kneeboard pages and scripts; added Mission Start audio/script triggers; reloaded saved `.miz` successfully.
-
-Offline tests verify archive structure, Lua table persistence, dictionary/mapResource persistence and file references. Final release missions should still be opened in DCS for in-game playback validation.
 
 ## Important Git Note
 
