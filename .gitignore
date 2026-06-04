@@ -5,6 +5,7 @@ obj/
 [Oo]bj/
 out/
 publish/
+artifacts/
 
 # Visual Studio files
 .vs/

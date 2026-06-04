@@ -126,6 +126,12 @@ Open a mission directly:
 dotnet run --project "mizedit.csproj" -- "C:\path\to\mission.miz"
 ```
 
+## CI Builds
+
+GitHub Actions builds the app on every push and pull request to `main`.
+
+After a workflow run finishes, open the run page and download the `dcs-miz-editor-windows` artifact from the Artifacts section.
+
 ## Important Git Note
 
 Do not commit DCS mission payloads. `.miz`, `.zip` and `.pdf` files are ignored intentionally because campaign missions can be large and may contain licensed campaign content.
