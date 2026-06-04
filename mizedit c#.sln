@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mizedit", "mizedit.csproj", "{FE22F7F1-EE2D-B9BC-8936-71E8326EF486}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE22F7F1-EE2D-B9BC-8936-71E8326EF486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE22F7F1-EE2D-B9BC-8936-71E8326EF486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE22F7F1-EE2D-B9BC-8936-71E8326EF486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE22F7F1-EE2D-B9BC-8936-71E8326EF486}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6E44D9B7-EAA5-44FB-9AD9-2F1DAC611474}
+	EndGlobalSection
+EndGlobal

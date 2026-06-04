@@ -1,0 +1,50 @@
+# Build outputs
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+
+# Visual Studio files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Rider / VS Code / tooling
+.idea/
+.vscode/
+*.ipr
+*.iws
+*.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Logs and caches
+*.log
+*.tlog
+*.cache
+*.ide
+radio_debug.txt
+
+# DCS mission/archive payloads
+*.miz
+*.zip
+*.pdf
+
+# Local scratch/test artifacts
+work/
+outputs/
+
+# Others
+*.DS_Store
+Thumbs.db
+ReSharper*/
+_TestResults*/
+TestResults/
