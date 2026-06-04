@@ -5,7 +5,11 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="assets\app-icon.ico" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MoonSharp" Version="2.0.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />

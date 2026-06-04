@@ -1,94 +1,99 @@
 # DCS Miz Editor
 
-DCS Miz Editor, also called MizEdit in the application UI, is a Windows WPF editor for DCS World `.miz` missions. It opens a mission archive, edits the Lua mission table and localized resources, then writes the changes back into a valid `.miz` archive.
+<p align="center">
+  <img src="assets/app-icon.png" width="128" alt="DCS Miz Editor Apache icon">
+</p>
 
-The project is aimed at campaign and mission maintenance work: briefing text, multilingual dictionaries, pictures, kneeboard pages, audio resources, Lua scripts, and route/task action inspection.
+<p align="center">
+  A Windows editor for DCS World <code>.miz</code> missions: briefings, localization, media resources, kneeboard pages, radio subtitles, scripts and mission triggers.
+</p>
 
-Recommended GitHub repository name:
+<p align="center">
+  <strong>Built for mission maintenance.</strong> Open a mission archive, edit the Lua mission table and localized resources, then write a valid <code>.miz</code> back to disk.
+</p>
 
-```text
-dcs-miz-editor
-```
+## Showcase
 
-Search keywords: DCS World mission editor, DCS miz editor, .miz editor, DCS mapResource editor, DCS l10n dictionary editor, DCS campaign mission tools.
+The screenshots below were taken from a local copy of `M04.miz` from the MAD AH-64D campaign, with only the displayed mission name changed to `Operation Apache Forge` for the showcase. The mission file itself is not included in this repository.
+
+### Briefing And Localization
+
+![Briefing editor](docs/assets/screenshots/01-briefing.png)
+
+MizEdit resolves `DictKey_*` briefing text through `l10n/<locale>/dictionary`, supports multiple locales such as `DEFAULT` and `RU`, and writes changed briefing fields back before saving.
+
+### Mission Pictures
+
+![Picture resource editor](docs/assets/screenshots/02-pictures.png)
+
+Briefing images are read through `pictureFileNameB` and `mapResource` keys. You can add, replace or remove image resources without manually editing the archive.
+
+### Audio Resources
+
+![Audio resource editor](docs/assets/screenshots/03-audio.png)
+
+Audio files are listed from `l10n/<locale>` and `mapResource`. Replacing a resource keeps the same `ResKey_*`, so existing trigger and route/task references keep working.
+
+### Trigger And Route Task Scan
+
+![Trigger and task action scan](docs/assets/screenshots/04-triggers.png)
+
+Many DCS campaign missions do not store most logic as simple classic triggers. MizEdit recursively scans route/task tables and shows actions such as `ComboTask`, `WrappedAction`, `TransmitMessage`, `SetFrequency`, `Script`, `EngageTargets` and other nested mission logic. The M04 showcase mission exposes 492 route/task actions.
+
+### Radio Subtitle Editing
+
+![Transmit radio subtitle editor](docs/assets/screenshots/05-radio.png)
+
+`TransmitMessage` actions are extracted with their group/task context, subtitle dictionary key, audio `ResKey_*`, duration and editable subtitle text. Saving a subtitle updates the active locale dictionary while the mission action keeps pointing at the same keys.
 
 ## What It Can Edit
 
-- Mission briefing fields: mission name, sortie, description, red task, blue task.
-- Localized `dictionary` values for `DEFAULT`, `RU`, and other `l10n` locales.
+- Mission name, sortie, description, red task and blue task.
+- Localized dictionary values for `DEFAULT`, `RU` and other `l10n` locales.
 - `mapResource` entries with generated `ResKey_*` keys.
-- Briefing pictures in `pictureFileNameB`.
-- Trigger pictures in `triggerPictures`.
-- Kneeboard images under `KNEEBOARD/IMAGES`.
-- Audio files under `l10n/<locale>`.
-- Existing audio/picture resource replacement while keeping the same `ResKey`.
-- Lua scripts under `l10n/<locale>`.
-- Simple Mission Start triggers for playing an added audio resource or running an added script.
-- Radio subtitles for `TransmitMessage` route/task actions.
+- Briefing pictures, trigger pictures and kneeboard images.
+- Audio resources under `l10n/<locale>`.
+- Existing audio/image replacement while preserving the same `ResKey_*`.
+- Lua script resources under `l10n/<locale>`.
+- Simple Mission Start triggers for playing added audio or running added scripts.
+- Radio subtitles from `TransmitMessage` route/task actions.
+- Batch TXT export/import for briefing localization work.
 
 ## DCS Mission Structure
 
 A `.miz` file is a zip archive. Important entries:
 
 - `mission` - Lua table containing most mission logic.
-- `options`, `warehouses`, `theatre` - DCS mission metadata.
+- `options`, `warehouses`, `theatre` - mission metadata.
 - `l10n/<locale>/dictionary` - localized text by `DictKey_*`.
 - `l10n/<locale>/mapResource` - resource file mapping by `ResKey_*`.
-- `l10n/<locale>/*` - audio, images, scripts and other resource files.
+- `l10n/<locale>/*` - audio, images, scripts and other resources.
 - `KNEEBOARD/IMAGES/*` - kneeboard pages.
 
-Many campaign missions do not use classic `mission.trig` triggers. For example, MAD AH-64D and A-10C Outpost store most mission logic in route/task actions such as `ComboTask`, `WrappedAction`, `TransmitMessage`, `SetFrequency`, `EngageTargets`, and similar nested task tables. MizEdit therefore scans both classic triggers and route/task actions.
+MizEdit extracts the archive to a temporary work directory, edits these files, then repacks the mission as a `.miz`.
 
-## Save Behavior
+## Save Safety
 
-`Save` and `Save as Miz` apply pending UI changes before writing the archive:
+`Save` and `Save as .miz` apply pending UI changes before writing:
 
-- current briefing fields are written to `mission` or `dictionary`;
+- briefing fields are written to `mission` or `dictionary`;
 - selected radio subtitle changes are written to the active locale dictionary;
 - the currently opened Lua script is written to the mission work directory;
 - added/replaced resources are already present in the work directory and `mapResource`.
 
-This means a user can edit fields and press `Save` directly. Pressing `Apply` is still available, but it is not required before saving.
+This means you can edit fields and press `Save` directly. `Apply` is still available for explicit briefing updates, but it is not required before saving.
 
 ## Resource Safety
 
 Adding a new file creates a `ResKey_*` entry in `mapResource` and copies the file into `l10n/<locale>`.
 
-Replacing an existing resource keeps the same key and changes only the file behind it. This is important for existing DCS actions:
+Replacing an existing resource keeps the same key and changes only the file behind it:
 
 ```lua
 ["file"] = "ResKey_advancedFile_31"
 ```
 
-If that key is kept, existing `TransmitMessage` or trigger actions continue to point at the same resource key after the audio/image file is replaced.
-
-## Tested Scenarios
-
-Functional tests were run on real installed DCS campaign missions, using copies only.
-
-### MAD AH-64D `M04.miz`
-
-- Locales: `DEFAULT`, `RU`
-- `ext_loader.library`: `Mods/campaigns/MAD AH-64D/MADAH64D`
-- `miz_id`: preserved
-- `mapResource`: 109 default resources
-- Radio `TransmitMessage`: 79 found after recursive route/task scan
-- Route/task actions: 492
-- Save/reload smoke test passed
-
-### A-10C Outpost `M3OUTPOSTA10.miz`
-
-- Locales: `DEFAULT`, `RU`
-- Default `mapResource`: 276 resources
-- RU `mapResource`: 43 resources
-- Radio `TransmitMessage`: 240
-- Route/task actions: 703
-- Added new audio to both locales
-- Replaced newly added audio under the same `ResKey`
-- Replaced an existing campaign radio resource while keeping the same `ResKey`
-- Added briefing image, trigger image, kneeboard image, and Lua script
-- Added Mission Start audio/script triggers
-- Saved `.miz` reloaded successfully
+Keeping the same key is important because existing `TransmitMessage`, trigger and route/task actions continue to point at the correct resource after the file is replaced.
 
 ## Build
 
@@ -115,14 +120,29 @@ Run:
 dotnet run --project "mizedit.csproj"
 ```
 
+Open a mission directly:
+
+```powershell
+dotnet run --project "mizedit.csproj" -- "C:\path\to\mission.miz"
+```
+
+## Tested On Real Missions
+
+Functional tests were run on local copies of real DCS campaign missions:
+
+- MAD AH-64D `M04.miz`: `DEFAULT`/`RU` locales, ext loader data preserved, 79 radio `TransmitMessage` actions and 492 route/task actions detected.
+- A-10C Outpost `M3OUTPOSTA10.miz`: added/replaced audio, images, kneeboard pages and scripts; added Mission Start audio/script triggers; reloaded saved `.miz` successfully.
+
+Offline tests verify archive structure, Lua table persistence, dictionary/mapResource persistence and file references. Final release missions should still be opened in DCS for in-game playback validation.
+
 ## Important Git Note
 
-Do not commit DCS mission payloads. `.miz` and `.zip` files are ignored intentionally because campaign missions can be large and may contain licensed/protected content.
+Do not commit DCS mission payloads. `.miz`, `.zip` and `.pdf` files are ignored intentionally because campaign missions can be large and may contain licensed campaign content.
 
-The repository should contain source code and docs only. Local test missions belong in `work/`, which is also ignored.
+The repository contains source code, docs, icons and screenshots only. Local test missions belong in `work/`, which is ignored.
 
 ## Current Limits
 
-- Full visual editing of every DCS route/task action is not implemented yet.
-- Classic `mission.trig` simple trigger creation is supported, but complex Mission Editor condition/action builders are still future work.
-- In-game playback should be validated in DCS for final release builds. Offline tests verify archive structure, Lua table persistence, `dictionary`, `mapResource`, and file references.
+- Full visual editing of every possible DCS route/task action is not implemented yet.
+- Simple classic trigger creation is supported, but a full Mission Editor-style condition/action builder is future work.
+- Some complex campaign logic is best inspected first, then edited carefully in focused fields such as resource keys, subtitle dictionaries and simple trigger actions.

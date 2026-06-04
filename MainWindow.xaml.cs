@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Microsoft.VisualBasic;
@@ -37,6 +39,12 @@ namespace MizEdit
             SetEnabled(false);
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            TryUseDarkTitleBar(new WindowInteropHelper(this).Handle);
+        }
+
         private string CurrentLocale => (string?)LocaleCombo.SelectedItem ?? "DEFAULT";
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -51,6 +59,19 @@ namespace MizEdit
             CloseSession();
             base.OnClosed(e);
         }
+
+        private static void TryUseDarkTitleBar(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return;
+
+            var enabled = 1;
+            _ = DwmSetWindowAttribute(hwnd, 20, ref enabled, sizeof(int));
+            _ = DwmSetWindowAttribute(hwnd, 19, ref enabled, sizeof(int));
+        }
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int attributeValue, int attributeSize);
 
         private void SetEnabled(bool enabled)
         {
@@ -74,17 +95,23 @@ namespace MizEdit
             if (dlg.ShowDialog() != true)
                 return;
 
+            TryOpenMission(dlg.FileName);
+        }
+
+        public bool TryOpenMission(string missionPath)
+        {
             try
             {
                 CloseSession();
-                _session = _missionService.LoadMission(dlg.FileName);
+                _session = _missionService.LoadMission(missionPath);
                 LoadLocales();
                 LoadBriefingFields();
                 SetEnabled(true);
 
-                SideStatusText.Text = Path.GetFileName(dlg.FileName);
+                SideStatusText.Text = Path.GetFileName(missionPath);
                 MizIdText.Text = BuildMissionSummary();
-                StatusText.Text = $"Loaded: {dlg.FileName} ({CurrentLocale})";
+                StatusText.Text = $"Loaded: {missionPath} ({CurrentLocale})";
+                return true;
             }
             catch (Exception ex)
             {
@@ -93,6 +120,7 @@ namespace MizEdit
                 MizIdText.Text = "";
                 StatusText.Text = "Load error";
                 MessageBox.Show(ex.Message, "Load error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
         }
 
@@ -364,6 +392,9 @@ namespace MizEdit
 
             foreach (var pic in _session.Mission.GetPictureFileNames())
                 PicturesList.Items.Add(FormatResourceDisplayWithFallback(pic));
+
+            if (PicturesList.Items.Count > 0)
+                PicturesList.SelectedIndex = 0;
         }
 
         private void PicturesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -451,6 +482,9 @@ namespace MizEdit
             {
                 KneeboardList.Items.Add(Path.GetRelativePath(_session.Archive.WorkDir, file));
             }
+
+            if (KneeboardList.Items.Count > 0)
+                KneeboardList.SelectedIndex = 0;
         }
 
         private void KneeboardList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -752,6 +786,9 @@ namespace MizEdit
             _radioTransmissions.AddRange(_session.Mission.GetRadioTransmissions());
             foreach (var message in _radioTransmissions)
                 RadioList.Items.Add(message.DisplayText);
+
+            if (RadioList.Items.Count > 0)
+                RadioList.SelectedIndex = 0;
         }
 
         private void RadioList_SelectionChanged(object sender, SelectionChangedEventArgs e)
