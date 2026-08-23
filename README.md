@@ -1,649 +1,112 @@
 # DCS Miz Editor
 
-Небольшой, но довольно мощный редактор миссий для DCS World, который работает с файлами `.miz`, читает и пишет структуру файлов миссии, локализации, ресурсов, Lua-скриптов и обзорных данных миссии.
-
-Проект сделан как Windows WPF-приложение на .NET, и его главная цель — ускорить правку миссий и переводов без ручного вскрытия архива и редактирования Lua-структуры через текстовый редактор.
-
-## Что это за проект
-
-MizEdit позволяет:
-
-- открывать `.miz`-архивы DCS;
-- читать и изменять данные миссии из `mission` Lua-таблицы;
-- редактировать briefing/описания, задачи, названия и локализованные значения;
-- работать с `l10n/<locale>/dictionary` и `mapResource`;
-- управлять картинками, аудио, скриптами и ресурсами миссии;
-- редактировать радиопереводы `TransmitMessage`;
-- экспортировать/импортировать переводы в TXT-формат для пакетной работы;
-- использовать локальный AI-перевод через Ollama и очередь перевода;
-- сохранять итоговый архив в корректный `.miz`-формат.
-
-Это не полноценный редактор миссии как в DCS Mission Editor, а инструмент для реальной поддержки и локализации миссий: быстрое обновление текста, замена ресурсов, корректировка указателей и сохранение миссии в рабочем виде.
-
----
-
-## Главная идея архитектуры
-
-Проект разделён на несколько слоёв:
-
-1. UI-слой
-   - WPF окна и пользовательские панели;
-   - представления для миссии, перевода, ресурсов и фильтров.
-
-2. Сервисный слой
-   - загрузка/сохранение миссий;
-   - перевод;
-   - анализ состояния;
-   - работа с очередью задач.
-
-3. Core-модели
-   - работа с Lua-таблицами;
-   - шифрование/энкриптование? нет; скорее управление данными миссии;
-   - локализация и регулярная работа с ресурсами.
-
-4. Поддержка файлов и архивов
-   - распаковка `.miz` в временную папку;
-   - проверка структуры архива;
-   - безопасное создание бэкапов;
-   - повторная упаковка в `.miz`.
-
----
-
-## Структура проекта
-
-```text
-mizedit/
-├─ App.xaml
-├─ App.xaml.cs
-├─ MainWindow.xaml
-├─ MainWindow.xaml.cs
-├─ MizArchive.cs
-├─ MissionLua.cs
-├─ LuaTableSerializer.cs
-├─ mizedit.csproj
-├─ mizedit c#.sln
-├─ README.md
-├─ translation_tool_settings.json
-├─ translation_tool_ui.ini
-├─ Core/
-│  ├─ ImageReplacement.cs
-│  ├─ LocalizationEngine.cs
-│  ├─ LuaEngine.cs
-│  ├─ MediaListItem.cs
-│  ├─ MissionModel.cs
-│  ├─ SessionState.cs
-│  ├─ TranslationBatchDocument.cs
-│  ├─ TranslationEntry.cs
-│  ├─ TranslationQueueState.cs
-│  └─ UserMessages.cs
-├─ Services/
-│  ├─ BatchService.cs
-│  ├─ GeminiBatchTranslationService.cs
-│  ├─ ITranslationProvider.cs
-│  ├─ MissionService.cs
-│  ├─ MissionSession.cs
-│  ├─ OllamaTranslationService.cs
-│  ├─ StateAnalyzer.cs
-│  ├─ ThumbnailService.cs
-│  ├─ TranslationCheckpointService.cs
-│  └─ TranslationQueueRunner.cs
-├─ Views/
-│  └─ TranslationWorkspace.xaml.cs
-├─ src/
-│  └─ Core/
-│     └─ UILocalization.cs
-├─ Resources/
-├─ Styles/
-├─ docs/
-├─ tests/
-└─ assets/
-```
-
----
-
-## Ключевые компоненты и за что они отвечают
+<p align="center">
+  <img src="assets/apache-showcase.jpg" alt="DCS Miz Editor showcase">
+</p>
 
-### 1. `MainWindow.xaml.cs`
+<p align="center">
+  A Windows editor and translation workspace for DCS World <code>.miz</code> missions.
+</p>
 
-Это главный экран приложения.
+<p align="center">
+  <a href="README.md"><strong>English</strong></a> ·
+  <a href="README.ru.md">Русский</a> ·
+  <a href="https://github.com/Mewt0/dcs-miz-editor/releases/latest"><strong>Download</strong></a>
+</p>
 
-Он отвечает за:
+MizEdit edits mission briefings, localization dictionaries, media resources, radio subtitles, scripts and selected mission structures without requiring manual ZIP/Lua work.
 
-- инициализацию WPF-окна и UI;
-- загрузку миссии и открытие `.miz`;
-- управление локалями (`DEFAULT`, `RU`, и т.д.);
-- отображение данных миссии: название, описание, задачи, фото, аудио и т.д.;
-- вызовы переводчиков и очереди перевода;
-- применение изменений к текущей миссии;
-- сохранение и подтверждение закрытия;
-- отображение состояния сессии и ошибок.
+> [!IMPORTANT]
+> For translation-only saves, MizEdit keeps the original `mission` file and `l10n/DEFAULT/*` byte-for-byte unchanged. New locale Lua files are written as UTF-8 without BOM, as required by DCS.
 
-Внутри окна создаются и используются:
+## Download
 
-- `MissionService` — для чтения/сохранения миссии;
-- `OllamaTranslationService` — для AI-перевода;
-- `TranslationQueueRunner` — для очереди переводов;
-- `SessionState` — для режима dirty/saved/error.
+Download the ready-to-run Windows x64 archive from [GitHub Releases](https://github.com/Mewt0/dcs-miz-editor/releases/latest), extract it, and run `MizEdit.exe`.
 
-Это центральный координатор логики приложения.
+Requirements: Windows 10/11 x64. The release is self-contained and does not require a separate .NET installation.
 
-### 2. `MissionService.cs`
+## Showcase
 
-Реализует базовые операции над миссией:
+### Briefing and localization
 
-```csharp
-public MissionSession LoadMission(string mizPath)
-public void Save(MissionSession session)
-public void SaveAsMiz(MissionSession session, string outPath)
-public void ExportTxt(MissionSession session, string locale, string outPath)
-public void ImportTxt(MissionSession session, string locale, string path)
-```
+![Briefing editor](docs/assets/screenshots/01-briefing.png)
 
-Что делает:
+Open `.miz` missions, switch between locales, edit briefing fields, and resolve `DictKey_*` values through `l10n/<locale>/dictionary`.
 
-- распаковывает архив через `MizArchive`;
-- загружает Lua-миссию через `LuaEngine`;
-- инициализирует `LocalizationEngine` для работы с локалями;
-- сохраняет миссию обратно в `.miz`.
+### Mission pictures
 
-Это сервисный мост между UI и низкоуровневой структурой миссии.
+![Picture resource editor](docs/assets/screenshots/02-pictures.png)
 
-### 3. `MizArchive.cs`
+Add, replace, or remove briefing and trigger pictures while preserving `ResKey_*` references.
 
-Это слой работы с архивом миссии.
+### Audio resources
 
-Отвечает за:
+![Audio resource editor](docs/assets/screenshots/03-audio.png)
 
-- распаковку `.miz` в временную папку;
-- проверку корректности содержимого архива;
-- сохранение в новый `.miz`;
-- создание резервных копий перед заменой файла;
-- удаление временной рабочей директории после завершения.
+Inspect localized audio, preview it, and replace files without changing the resource keys used by mission logic.
 
-Ключевые особенности:
+### Trigger and route-task scan
 
-- `WorkDir` — временная папка, где реально редактируется миссия;
-- `MissionFilePath` — путь к `mission` внутри распакованного архива;
-- `SaveAs` — бизнес-операция, которая создает `tmp`-архив, валидирует его и заменяет файл;
-- `LastBackupPath` — сохраняет путь к созданной резервной копии.
+![Trigger and task action scan](docs/assets/screenshots/04-triggers.png)
 
-Это один из самых важных классов, потому что именно он обеспечивает безопасное редактирование и сохранение.
+Inspect classic triggers and nested route/task actions such as `ComboTask`, `WrappedAction`, `TransmitMessage`, scripts, frequencies, and target actions.
 
-### 4. `MissionLua.cs`
+### Radio subtitle editing
 
-Это основной доступ к содержимому `mission` Lua-таблицы.
+![Transmit radio subtitle editor](docs/assets/screenshots/05-radio.png)
 
-Отвечает за:
+Edit `TransmitMessage` subtitles with group/task context, duration, dictionary keys, and linked audio resources.
 
-- чтение Lua-файла миссии;
-- оборачивание в `mission = ...` при необходимости;
-- парсинг таблицы MoonSharp;
-- чтение/запись базовых строковых параметров миссии;
-- работу с картинками и briefing-полями;
-- извлечение ресурсов `pictureFileName*`;
-- управление `DictKey`/`ResKey`-связанными данными;
-- извлечение радио-переводов и действий `TransmitMessage`.
+## Translation workspace
 
-Этот класс является ядром «миссионной модели» — фактически он превращает Lua-структуру миссии в удобный объект для редактирования.
+- Numbered translator-friendly export without exposing backend `DictKey_*` values.
+- Stable batch identity, legacy marker compatibility, and partial imports.
+- Block-aware Smart Paste that preserves multiline responses.
+- Deduplication of identical source strings.
+- Mandatory preview for clipboard imports: changed, skipped, rejected, and missing rows.
+- Missing row tracking, so an unchanged row in a 1,000-line batch remains visible.
+- Optional AI translation queue using Gemini or Ollama-compatible providers.
+- Checkpoints for interrupted translation jobs.
 
-### 5. `LuaTableSerializer.cs`
+## Save and quality safety
 
-Сериализатор Lua-таблиц.
+Before saving, MizEdit can show:
 
-Используется чтобы:
+- changed translation keys;
+- archive files that will be added, replaced, or removed;
+- placeholder, newline, frequency, coordinate, and length problems;
+- untranslated text and inconsistent translations of duplicate originals;
+- suspicious Lua/technical text changes.
 
-- превратить загруженную MoonSharp-таблицу обратно в корректный Lua-код;
-- сохранить изменённую миссию без разрушения структуры.
+Translation-only saves create or update a complete `l10n/RU/dictionary` with DEFAULT fallback values. They do not rewrite mission logic. Backups are created before replacing an existing `.miz`.
 
-Без этого сохранение миссии было бы очень хрупким и трудным.
+## DCS mission structure
 
-### 6. `Core/LuaEngine.cs`
+A `.miz` file is a ZIP archive. Important entries include:
 
-Минималистичный фасад над `MissionLua`:
+- `mission` — the main Lua mission table;
+- `options`, `warehouses`, `theatre` — mission metadata;
+- `l10n/<locale>/dictionary` — localized `DictKey_*` text;
+- `l10n/<locale>/mapResource` — `ResKey_*` file mapping;
+- `l10n/<locale>/*` — audio, images, scripts, and other resources;
+- `KNEEBOARD/IMAGES/*` — kneeboard pages.
 
-- создает `MissionLua`;
-- загружает миссию из файла;
-- сохраняет обратно.
+## Build from source
 
-Это очень простой слой, но он нужен для отделения работы с Lua от UI и сервисов.
-
-### 7. `Core/LocalizationEngine.cs`
-
-Это движок локализации миссии.
-
-Он отвечает за:
-
-- чтение `l10n/<locale>/mapResource`;
-- загрузку ресурсов `ResKey -> файл`;
-- добавление новых файлов в локаль;
-- замену существующих ресурсов без изменения ключа;
-- удаление ресурсов;
-- поддержание списка доступных локалей;
-- сборку/разбор `mapResource` Lua-таблицы.
-
-То есть это слой, который позволяет корректно добавлять и заменять:
-
-- картинки;
-- аудио;
-- скрипты;
-- прочие ресурсы миссии.
-
-### 8. `Core/SessionState.cs`
-
-Состояние сессии приложения.
-
-Хранит:
-
-- `IsDirty` — были ли изменения;
-- `SaveState` — `Idle`, `Saving`, `Saved`, `Error`;
-- события `PropertyChanged` для UI.
-
-Это обычный state-объект, который помогает интерфейсу показывать, что файл изменён, сохраняется или сломан.
-
-### 9. `Services/OllamaTranslationService.cs`
-
-Это AI-переводчик.
-
-Он отвечает за:
-
-- отправку текста в локальный Ollama API;
-- защиту токенов/ключей/технических строк от случайного перевода;
-- восстановление замещённых фрагментов после ответа модели;
-- выявление Lua/технических блоков, которые нельзя переводить автоматически;
-- работа с очередью перевода.
-
-Основные принципы:
-
-- если строка уже на кириллице — не переводить;
-- если это технический Lua-код — сохранить как есть;
-- защитить `ResKey`, `DictKey`, пути, URL, числа и похожие значения;
-- вернуть результат в исходный формат.
-
-Это критично для DCS-локализации, потому что неправильный перевод кода, путей или ключей ломает миссию.
-
-### 10. `Services/TranslationQueueRunner.cs`
-
-Объект очереди перевода.
-
-Он управляет:
-
-- списком задач перевода;
-- состоянием прогресса;
-- повтором неудачных запросов;
-- остановкой/прерыванием процесса;
-- сбором ошибок и UI-состояния.
-
-Служит мостом между интерфейсом и `OllamaTranslationService`.
-
-### 11. `Services/BatchService.cs`
-
-Сервис пакетной обработки.
-
-Отвечает за:
-
-- экспорт всех миссий из папки в TXT;
-- импорт TXT в миссии;
-- массовую аналитику состояния миссий.
-
-Это удобно для больших серий миссий, когда нужно локализовать сразу пачку `.miz`-файлов.
-
-### 12. `Services/StateAnalyzer.cs`
-
-Рассматривает состояние миссии и формирует сводку по содержимому.
-
-Его функция — быстро понять:
-
-- какие ресурсы есть в миссии;
-- насколько она заполнена;
-- какие части миссии требуют внимания.
-
-### 13. `Services/ThumbnailService.cs`
-
-Сервис предварительного рендеринга и генерации миниатюр для графики и материалов миссии.
-
-Используется при работе с картинками, briefing и ресурсами.
-
-### 14. `Services/GeminiBatchTranslationService.cs`
-
-Один из альтернативных переводчиков.
-
-Он подготавливает и выполняет пакетный перевод с помощью Gemini/других внешних моделей, но проект в основном работает через локальный Ollama-подход.
-
-### 15. `Services/ITranslationProvider.cs`
-
-Интерфейс провайдера перевода.
-
-Его цель — унификация:
-
-- любой переводчик должен иметь одинаковую контрактную модель;
-- UI может вызывать `TranslateAsync`, не зная, какой провайдер реально используется.
-
-### 16. `Views/TranslationWorkspace.xaml.cs`
-
-Это UI для рабочего пространства перевода.
-
-Отвечает за:
-
-- таблицу строк перевода;
-- фильтрацию по типам ключей;
-- поиск и замену;
-- синхронизацию прокрутки;
-- копирование/вставку/очистку видимых строк;
-- множества чекбоксов и локализацию интерфейса;
-- применение перевода в миссию.
-
-Это основная панель для перевода текста миссии.
-
----
-
-## Области работы приложения
-
-### 1. Briefing и редактирование миссии
-
-Приложение умеет читать и изменять:
-
-- `mission` параметры;
-- `DictKey_*` в `dictionary`;
-- названия миссии, задачи, описание;
-- информацию для briefing и интерфейсных редакторов.
-
-### 2. Локализация
-
-Используется схема:
-
-- `l10n/DEFAULT` — базовый язык;
-- `l10n/RU` — русский перевод;
-- `mapResource` — привязка `ResKey` к файлам;
-- `dictionary` — готовые строки текста.
-
-Функции:
-
-- выбор языка;
-- загрузка словаря по локали;
-- экспорт/импорт TXT;
-- замена строк и сохранение в миссию.
-
-### 3. Ресурсы миссии
-
-Работа с файлами типа:
-
-- png, jpg, bmp — изображения;
-- wav, ogg, mp3 — аудио;
-- lua — скрипты;
-- любые прикреплённые ресурсы миссии.
-
-Когда ресурс добавляется:
-
-- создаётся новый файл в локали;
-- создаётся `ResKey_*` в `mapResource`;
-- миссия после этого может ссылаться на этот ресурс корректно.
-
-### 4. Радиопереводы и транслируемые сообщения
-
-Класс `MissionLua` умеет находить и обрабатывать действия типа `TransmitMessage`.
-
-Редактор может:
-
-- читать транслируемые сообщения;
-- сохранять контекст: group/task, ключ словаря, аудиофайл, длительность, текст;
-- изменять текст радиоперевода;
-- писать обратно в существующий словарь, не ломая ссылку на ресурс.
-
-### 5. Пакетная обработка
-
-Через `BatchService` можно:
-
-- обработать целую папку `.miz`;
-- экспортировать/импортировать переводы массово;
-- быстро проверить состояние миссий.
-
----
-
-## Схема данных и рабочий процесс
-
-### Типичный сценарий работы
-
-1. Пользователь открывает `.miz`.
-2. `MainWindow` вызывает `MissionService.LoadMission`.
-3. `MizArchive` распаковывает архив в временную папку.
-4. `LuaEngine` и `MissionLua` загружают `mission` Lua-таблицу.
-5. `LocalizationEngine` читает локали и `mapResource`.
-6. UI отображает тексты, изображения, ресурсы и словари.
-7. Пользователь вносит изменения.
-8. `SessionState` фиксирует, что есть несохранённые изменения.
-9. При сохранении приложение пишет данные обратно в `mission`/`dictionary` и запаковывает миссию.
-10. `MizArchive.SaveAs` создаёт резервную копию и сохраняет архив.
-
----
-
-## Какие данные хранит проект
-
-### `mission`
-
-Основной Lua-файл миссии. В нём обычно хранятся:
-
-- название миссии;
-- описание;
-- задачи;
-- ресурсы;
-- триггеры;
-- действия маршрутов/сценариев;
-- логика миссии.
-
-### `l10n/<locale>/dictionary`
-
-Текстовые строки по `DictKey_*`, которые используются для локализации интерфейса и briefing.
-
-### `l10n/<locale>/mapResource`
-
-Таблица соответствия ключей ресурсов к файлам:
-
-```lua
-mapResource = {
-  ["ResKey_1"] = "file1.png",
-  ["ResKey_2"] = "sound.ogg"
-}
-```
-
-### `l10n/<locale>/`
-
-Папка с реальными файлами ресурсов: картинки, звук, lua-скрипты, и т.д.
-
----
-
-## Безопасность и сохранение
-
-Проект старается не терять данные:
-
-- перед перезаписью `.miz` создаётся бэкап;
-- диапазон замен ограничен только нужными файлами;
-- `mapResource` обновляется вместе с ресурсами;
-- при сохранении проверяется корректность созданного архива;
-- временные рабочие области удаляются после завершения.
-
-Особенно важно, что `LocalizationEngine.ReplaceResourceFile` старается сохранять тот же `ResKey` при замене файла, чтобы уже существующие ссылки внутри миссии продолжали работать.
-
----
-
-## Как устроена локализация UI
-
-UI локализация реализована через `src/Core/UILocalization.cs`.
-
-Это отдельная система от локализации миссии:
-
-- она хранит текущий язык (`EN` / `RU`);
-- пишет язык в локальный файл настроек пользователя;
-- подменяет словари ресурсов `Resources/Strings.ru.xaml` или `Resources/Strings.en.xaml`;
-- срабатывает события `LanguageChanged` и перерисовывает UI.
-
-Это значит, что приложение поддерживает два языка интерфейса, причём пользовательский выбор сохраняется между запусками.
-
----
-
-## Как устроена очередь AI-перевода
-
-Пользовательский сценарий:
-
-- выбранные строки фильтруются;
-- система копирует их в пакет;
-- `OllamaTranslationService` отправляет запрос к локальному Ollama;
-- защищаются специальные фрагменты;
-- модель возвращает перевод;
-- сервис восстанавливает заполнители;
-- UI вставляет перевод в нужные строки;
-- пользователь применяет изменения к миссии.
-
-Это критически важно, поскольку DCS-строки часто включают:
-
-- Lua-код;
-- команды/маркеры;
-- имена ресурсов;
-- ключи словаря;
-- технические токены.
-
-Их нельзя слепо переводить без защиты.
-
----
-
-## Основные сценарии использования
-
-### 1. Редактирование briefing текста
-
-Пользователь открывает миссию, меняет название/описание/задачи, а затем сохраняет.
-
-### 2. Работа с локализацией
-
-Пользователь выбирает локаль, экспортирует строки в TXT, переводит их с помощью внешнего переводчика или AI, затем импортирует обратно.
-
-### 3. Замена картинок и аудио
-
-Новое изображение или звук добавляются как ресурс, а ссылка в `mapResource` корректно прикрепляется к объекту миссии.
-
-### 4. Правка радиопереводов
-
-Система извлекает `TransmitMessage`, показывает источник и текст, позволяет заменить перевод и сохранить обратно.
-
-### 5. Пакетная работа по папке
-
-Сервис `BatchService` может проходить по набору миссий и сохранять изменения массово.
-
----
-
-## Сильные стороны проекта
-
-- работа напрямую с `.miz` без ручных Zip/манифестов;
-- нормальная модель `mission` + `dictionary` + `mapResource`;
-- поддержка локалей и ресурсов;
-- AI-перевод с защитой технических фрагментов;
-- сохранение бэкапов и безопасная перезапись архива;
-- пакетная работа и массовые сценарии;
-- WPF-интерфейс, удобный для локальной поддержки миссий.
-
----
-
-## Ограничения проекта
-
-- это не полноценный редактор DCS как в редакторе миссий;
-- не все типы действий DCS полностью визуализированы;
-- часть сложной логики требует ручного анализа;
-- некоторые маршруты/задачи и триггеры требуют осторожного редактирования;
-- проект ориентирован на практическую миссионную поддержку, а не на универсальный 3D-редактор всех аспектов DCS.
-
----
-
-## Как собрать проект
-
-### Требования
-
-- Windows;
-- .NET SDK 10;
-- git для работы с репозиторием.
-
-### Сборка Debug
+Requirements: Windows and .NET SDK 10.
 
 ```powershell
-dotnet build "mizedit c#.sln"
+dotnet restore .\mizedit.csproj
+dotnet build .\mizedit.csproj -c Release
+dotnet run --project .\mizedit.csproj
 ```
 
-### Сборка Release
+Run the focused localization regression:
 
 ```powershell
-dotnet build "mizedit c#.sln" -c Release
+dotnet run --project .\tests\GreenLine.Integration\GreenLine.Integration.csproj -c Release -- --briefing-locale-smoke
 ```
 
-### Запуск
+## Project status
 
-```powershell
-dotnet run --project "mizedit.csproj"
-```
-
-### Запуск с открытием миссии напрямую
-
-```powershell
-dotnet run --project "mizedit.csproj" -- "C:\path\to\mission.miz"
-```
-
----
-
-## Tесты и проверки
-
-В проекте есть отдельные тестовые папки:
-
-- `tests/F4E.Translation`
-- `tests/Ollama.Smoke`
-- `tests/GreenLine.Integration`
-- `tests/ImageReplacement.Integration`
-
-Они проверяют:
-
-- локализацию;
-- пакетный перевод;
-- поведение замены изображений;
-- интеграцию с моделями/сервисами.
-
----
-
-## Краткая карта ответственности по файлам
-
-| Файл | Ответственность |
-|---|---|
-| `MainWindow.xaml.cs` | Основной UI и сценарии работы приложения |
-| `MissionService.cs` | Загрузка и сохранение миссии |
-| `MizArchive.cs` | Распаковка/упаковка `.miz` и бэкапы |
-| `MissionLua.cs` | Работа с Lua-структурой миссии |
-| `LocalizationEngine.cs` | Локали, `mapResource`, ресурсы |
-| `LuaEngine.cs` | Фасад для загрузки/сохранения Lua |
-| `SessionState.cs` | Состояние сохранения/изменений |
-| `OllamaTranslationService.cs` | AI-перевод с защитой технических фрагментов |
-| `TranslationQueueRunner.cs` | Очередь переводов |
-| `BatchService.cs` | Массовая обработка миссий |
-| `TranslationWorkspace.xaml.cs` | UI рабочих строк перевода |
-| `UILocalization.cs` | Локализация интерфейса |
-| `ImageReplacement.cs` | Нормализация/замена изображений |
-| `UserMessages.cs` | Централизованные сообщения и тексты ошибок |
-
----
-
-## Итог
-
-MizEdit — это практический инструмент для работы с миссиями DCS: он не пытается заменить собой полноценный редактор миссий, но закрывает очень важную часть — быстрое редактирование текста, локализацию, ресурсы, радиопереводы и сохранение архива в корректном виде.
-
-Главная ценность проекта — не «красивый редактор», а рабочий механизм, который позволяет:
-
-- быстро править содержание миссий;
-- легко менять локализованные тексты;
-- безопасно заменять ресурсы;
-- снижать ручной труд при подготовке миссии;
-- сохранять всё в правильную DCS-структуру.
-
----
-
-## Примечание для разработчика
-
-Если вы будете дальше развивать проект, полезно держать в голове три ключевых принципа:
-
-1. Не ломать структуру DCS Lua и `mapResource`.
-2. Сохранять `ResKey` и `DictKey` при изменениях, чтобы ссылки не разъехались.
-3. Не переводить технические фрагменты без защиты: ключи, пути, Lua, команды и ресурсы должны оставаться корректными.
-
-Это и есть основа надёжной работы этого редактора.
+MizEdit is under active development. Always keep the automatic backup until the edited mission has been tested in DCS.
