@@ -1,0 +1,113 @@
+<Window x:Class="MizEdit.Views.TranslationImportPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Предпросмотр вставки перевода"
+        Width="1120" Height="720" MinWidth="860" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource AppBackgroundBrush}"
+        AutomationProperties.Name="Предпросмотр вставки перевода">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock x:Name="TitleText" Text="Проверьте изменения перед применением"
+                       FontSize="20" FontWeight="SemiBold"/>
+            <TextBlock x:Name="SubtitleText" Margin="0,4,0,0"
+                       Text="Существующие данные не изменятся, пока вы не подтвердите операцию."
+                       Foreground="{StaticResource TextMutedBrush}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Margin="0,0,0,12" Padding="12,9"
+                Background="{StaticResource PanelBackgroundBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <WrapPanel x:Name="SummaryPanel"
+                       AutomationProperties.Name="Сводка импорта"
+                       AutomationProperties.LiveSetting="Polite">
+                <TextBlock x:Name="FoundText" Margin="0,0,20,0" FontWeight="SemiBold"/>
+                <TextBlock x:Name="ChangedText" Margin="0,0,20,0" FontWeight="SemiBold"/>
+                <TextBlock x:Name="MissingText" Margin="0,0,20,0"/>
+                <TextBlock x:Name="UnchangedText" Margin="0,0,20,0"/>
+                <TextBlock x:Name="SuspiciousText" Margin="0,0,20,0"/>
+                <TextBlock x:Name="SkippedText" Margin="0,0,20,0"/>
+                <TextBlock x:Name="RejectedText" Margin="0,0,20,0"/>
+                <TextBlock x:Name="AliasesText"/>
+            </WrapPanel>
+        </Border>
+
+        <DockPanel Grid.Row="2" Margin="0,0,0,8" LastChildFill="False">
+            <TextBlock x:Name="FilterLabelText" DockPanel.Dock="Left" VerticalAlignment="Center"
+                       Margin="0,0,8,0" Text="Фильтр:"/>
+            <ComboBox x:Name="FilterCombo" DockPanel.Dock="Left" Width="190"
+                      SelectionChanged="FilterCombo_SelectionChanged"/>
+        </DockPanel>
+
+        <DataGrid x:Name="PreviewGrid" Grid.Row="3"
+                  ItemsSource="{Binding Rows}" AutoGenerateColumns="False"
+                  CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                  SelectionMode="Extended" SelectionUnit="FullRow" RowHeaderWidth="0"
+                  EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                  ScrollViewer.CanContentScroll="True"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  AutomationProperties.Name="Изменения перевода">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="KeyColumn" Header="DictKey" Binding="{Binding Key}" Width="210"/>
+                <DataGridTextColumn x:Name="PartColumn" Header="Часть" Binding="{Binding PartNumber}" Width="70"/>
+                <DataGridTextColumn x:Name="SourceColumn" Header="Оригинал" Binding="{Binding SourceText}" Width="*" MinWidth="180"/>
+                <DataGridTextColumn x:Name="CurrentColumn" Header="Текущий перевод" Binding="{Binding CurrentTranslation}" Width="*" MinWidth="180"/>
+                <DataGridTextColumn x:Name="ProposedColumn" Header="Новый перевод" Binding="{Binding ProposedTranslation}" Width="*" MinWidth="180"/>
+                <DataGridTemplateColumn x:Name="StatusColumn" Header="Статус" Width="150" SortMemberPath="StatusSortKey">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="5,3">
+                                <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Detail}" Foreground="{StaticResource TextMutedBrush}"
+                                           FontSize="10" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border Grid.Row="4" Margin="0,12,0,0" Padding="10,8"
+                Background="{StaticResource PanelBackgroundAltBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <TextBlock x:Name="ProblemsTitleText" Text="Замечания" FontWeight="SemiBold"/>
+                <ScrollViewer Grid.Row="1" MaxHeight="110" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="ProblemsList" Margin="0,5,0,0"
+                                  ItemsSource="{Binding Problems}"
+                                  AutomationProperties.Name="Ошибки и предупреждения"
+                                  AutomationProperties.LiveSetting="Polite">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}" Foreground="{Binding Brush}"
+                                           TextWrapping="Wrap" Margin="0,2"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <DockPanel Grid.Row="5" Margin="0,14,0,0" LastChildFill="False">
+            <TextBlock x:Name="SafetyText" DockPanel.Dock="Left" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       Text="Отмена оставит все переводы без изменений."/>
+            <Button x:Name="ApplyButton" DockPanel.Dock="Right" Margin="8,0,0,0"
+                    Style="{StaticResource PrimaryButton}" Click="Apply_Click"
+                    IsEnabled="{Binding CanApply}"/>
+            <Button x:Name="CancelButton" DockPanel.Dock="Right" Content="Отмена"
+                    Style="{StaticResource CompactButton}" IsCancel="True" Click="Cancel_Click"/>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -50,7 +50,7 @@ public sealed class MissionLua
     public void LoadFromMissionFile(string missionPath)
     {
         if (!File.Exists(missionPath))
-            throw new FileNotFoundException("Не найден файл mission", missionPath);
+            throw new FileNotFoundException(UserMessages.Get("MissionFileMissing"), missionPath);
 
         var text = File.ReadAllText(missionPath).TrimStart('\uFEFF'); // убрать BOM
         var code = BuildMissionWrapper(text);
@@ -61,12 +61,12 @@ public sealed class MissionLua
         }
         catch (SyntaxErrorException ex)
         {
-            throw new InvalidOperationException($"Lua parse error: {ex.DecoratedMessage}", ex);
+            throw new InvalidOperationException(UserMessages.Get("LuaParseError", ex.DecoratedMessage), ex);
         }
 
         var missionDyn = _lua.Globals.Get("mission");
         if (missionDyn.Type != DataType.Table)
-            throw new InvalidOperationException("Lua-объект mission не является таблицей.");
+            throw new InvalidOperationException(UserMessages.Get("MissionNotTable"));
 
         MissionTable = missionDyn.Table;
     }
@@ -102,7 +102,7 @@ public sealed class MissionLua
     public void SaveToMissionFile(string missionPath)
     {
         if (MissionTable == null)
-            throw new InvalidOperationException("MissionTable is null");
+            throw new InvalidOperationException(UserMessages.Get("MissionTableMissing"));
 
         var luaText = "mission = " + LuaTableSerializer.SerializeTable(MissionTable);
         File.WriteAllText(missionPath, luaText);

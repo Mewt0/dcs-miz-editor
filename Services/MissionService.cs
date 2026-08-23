@@ -17,14 +17,16 @@ public sealed class MissionService
 
     public void Save(MissionSession session)
     {
-        _luaEngine.SaveMission(session.Mission, session.Archive.MissionFilePath);
+        SaveMissionIfDirty(session);
         session.Archive.SaveAs(session.SourcePath);
+        session.MarkMissionSaved();
     }
 
     public void SaveAsMiz(MissionSession session, string outPath)
     {
-        _luaEngine.SaveMission(session.Mission, session.Archive.MissionFilePath);
+        SaveMissionIfDirty(session);
         session.Archive.SaveAs(outPath);
+        session.MarkMissionSaved();
     }
 
     public void ExportTxt(MissionSession session, string locale, string outPath)
@@ -34,6 +36,13 @@ public sealed class MissionService
 
     public void ImportTxt(MissionSession session, string locale, string path)
     {
-        session.Localization.ImportTxt(session.Mission, locale, path);
+        if (session.Localization.ImportTxt(session.Mission, locale, path))
+            session.MarkMissionDirty();
+    }
+
+    private void SaveMissionIfDirty(MissionSession session)
+    {
+        if (session.IsMissionDirty)
+            _luaEngine.SaveMission(session.Mission, session.Archive.MissionFilePath);
     }
 }

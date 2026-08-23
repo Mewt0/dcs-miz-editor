@@ -1,0 +1,288 @@
+<UserControl x:Class="MizEdit.Views.TranslationWorkspace"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinWidth="980"
+             MinHeight="540">
+    <Grid Background="{StaticResource AppBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*" MinHeight="125"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="3*" MinHeight="145"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Margin="0,0,0,8" Padding="12,8"
+                Background="{StaticResource PanelBackgroundAltBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="7">
+            <DockPanel>
+                <Button x:Name="BackButton" DockPanel.Dock="Left" Content="← В редактор" Style="{StaticResource CompactButton}"
+                        ToolTip="Вернуться в редактор миссии" Click="Back_Click"/>
+                <TextBlock x:Name="WorkspaceSummaryText" DockPanel.Dock="Right" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           AutomationProperties.LiveSetting="Polite"/>
+                <StackPanel Margin="14,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="WorkspaceTitleText" Text="Перевод текстов миссии" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="WorkspaceSubtitleText" Text="Отфильтруйте строки · скопируйте всё · переведите · вставьте всё · проверьте"
+                               Foreground="{StaticResource TextMutedBrush}" FontSize="11"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1" Margin="0,0,0,8" Padding="10,7"
+                Background="{StaticResource PanelBackgroundBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TranslationSearchBox" Grid.Column="0" MinWidth="280"
+                             ToolTip="Поиск по DictKey, оригиналу или переводу (Ctrl+F)"
+                             TextChanged="TranslationSearchBox_TextChanged"/>
+                    <CheckBox x:Name="OnlyMissingTranslationsBox" Grid.Column="1" Content="Только без перевода"
+                              ToolTip="Показывать только строки, для которых ещё нет перевода"
+                              VerticalAlignment="Center" Margin="14,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="OnlyChangedTranslationsBox" Grid.Column="2" Content="Только изменённые"
+                              ToolTip="Показывать только строки, изменённые в текущем сеансе"
+                              VerticalAlignment="Center" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="HideTechnicalTranslationsBox" Grid.Column="3" Content="Скрыть Lua и код"
+                              IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"
+                              ToolTip="Технические блоки Lua и код не попадут в копирование, вставку и AI-перевод"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <Button x:Name="ReloadButton" Grid.Column="4" Content="Обновить список" Style="{StaticResource CompactButton}"
+                            ToolTip="Перечитать строки перевода из открытой миссии"
+                            Click="ReloadTranslations_Click"/>
+                </Grid>
+                <WrapPanel Grid.Row="1" Margin="0,7,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="KeyTypesText" Text="Типы DictKey:" VerticalAlignment="Center" Margin="0,0,8,0"
+                               Foreground="{StaticResource TextMutedBrush}" FontWeight="SemiBold"/>
+                    <CheckBox x:Name="ActionTextKeyBox" Content="ActionText" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="ActionRadioTextKeyBox" Content="ActionRadioText" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="DescriptionKeyBox" Content="description" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="SubtitleKeyBox" Content="subtitle" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="SortieKeyBox" Content="sortie" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="NameKeyBox" Content="name" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="ShowOtherKeysBox" Content="Другие ключи" IsChecked="True" Margin="0,0,10,0"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                    <CheckBox x:Name="SkipEmptySourceBox" Content="Пропускать пустые строки" IsChecked="True"
+                              ToolTip="Не показывать DictKey без исходного текста"
+                              Checked="TranslationFilter_Changed" Unchecked="TranslationFilter_Changed"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="{StaticResource PanelBackgroundAltBrush}"
+                    BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <DockPanel Margin="9,6">
+                        <TextBlock x:Name="SourceLineCountText" DockPanel.Dock="Right"
+                                   Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBlock x:Name="SourceHeaderText" Text="Оригинал · DEFAULT" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <!-- Оригинал остаётся только для чтения — это не поле ввода, а справочная копия DEFAULT-текста -->
+                    <TextBox x:Name="SourceBatchText" Grid.Row="1" Margin="5" Padding="8,6"
+                             IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                             FontFamily="Consolas" FontSize="12" VerticalContentAlignment="Top"
+                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                             TextChanged="SourceBatchText_TextChanged"/>
+                </Grid>
+            </Border>
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" Background="Transparent"/>
+            <Border Grid.Column="2" Background="{StaticResource PanelBackgroundAltBrush}"
+                    BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <DockPanel Margin="9,6">
+                        <TextBlock x:Name="TranslationLineCountText" DockPanel.Dock="Right"
+                                   Foreground="{StaticResource TextMutedBrush}"/>
+                        <TextBlock x:Name="TranslationHeaderText" Text="Перевод · выбранная локализация" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <!--
+                        Раньше здесь стоял IsReadOnly="True" — поле принимало текст только через
+                        кнопку "Вставить весь перевод" (PasteBatchRequested), печатать сюда было нельзя.
+                        Теперь поле редактируемое: правки debounce'ятся и всплывают через событие
+                        TranslationBatchEdited (см. code-behind), на которое должен подписаться тот же
+                        обработчик, что и на PasteBatchRequested, чтобы разобрать [[N]]-маркеры обратно
+                        в TranslationEntry.
+                    -->
+                    <TextBox x:Name="TranslationBatchText" Grid.Row="1" Margin="5" Padding="8,6"
+                             IsReadOnly="False" AcceptsReturn="True" TextWrapping="NoWrap"
+                             FontFamily="Consolas" FontSize="12" VerticalContentAlignment="Top"
+                             VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                             ToolTip="Можно вставить весь перевод кнопкой ниже или печатать прямо здесь. Служебные маркеры скрыты автоматически"
+                             TextChanged="TranslationBatchText_TextChanged"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="0,7">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="CopyAllButton" Grid.Column="0" Content="Скопировать всё для переводчика" Style="{StaticResource PrimaryButton}"
+                    ToolTip="Скопировать все видимые строки одним блоком (Ctrl+Shift+C)" Click="CopyBatch_Click"/>
+            <CheckBox x:Name="IncludeInstructionBox" Grid.Column="1" Content="Добавить промпт для AI" IsChecked="True"
+                      ToolTip="Добавить правила перевода DCS: не менять DictKey, Lua, команды и форматирование"
+                      VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <CheckBox x:Name="DeduplicateBatchBox" Grid.Column="2" Content="Оптимизировать одинаковые строки" IsChecked="True"
+                      ToolTip="Отправлять одинаковый оригинал один раз и применять перевод ко всем совпадениям"
+                      VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <CheckBox x:Name="CompactNumberedBatchBox" Grid.Column="3" Content="Короткий формат 1»" IsChecked="True" IsEnabled="False"
+                      ToolTip="Копирование для AI всегда использует Batch + 1» без длинных M2/MZ-маркеров"
+                      VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <CheckBox x:Name="SyncScrollBox" Grid.Column="5" Content="Связать прокрутку" IsChecked="True"
+                      ToolTip="Прокручивать оригинал и перевод одновременно"
+                      VerticalAlignment="Center" Margin="12,0"/>
+            <CheckBox x:Name="PasteOverwriteBox" Grid.Column="6" Content="Заменять готовый перевод" IsChecked="False"
+                      ToolTip="Разрешить вставке заменить уже заполненные строки"
+                      VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <Button x:Name="PasteAllButton" Grid.Column="7" Content="Вставить весь перевод" Style="{StaticResource PrimaryButton}"
+                    ToolTip="Вставить полный размеченный ответ переводчика (Ctrl+Shift+V)" Click="PasteBatch_Click"/>
+        </Grid>
+
+        <DataGrid x:Name="TranslationGrid" Grid.Row="4"
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                  SelectionMode="Extended" SelectionUnit="FullRow" RowHeaderWidth="0"
+                  HeadersVisibility="Column" IsReadOnly="False"
+                  EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                  ScrollViewer.CanContentScroll="True" AutomationProperties.Name="Таблица перевода миссии">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="#" Binding="{Binding DisplayNumber}" Width="72" IsReadOnly="True"/>
+                <DataGridTemplateColumn x:Name="OriginalColumn" Header="Оригинал · DEFAULT" Width="*" MinWidth="300" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding SourceText}" Margin="8,6" TextWrapping="Wrap"
+                                       MaxHeight="120" ToolTip="{Binding SourceText}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn x:Name="TranslationColumn" Header="Редактор перевода" Width="*" MinWidth="300">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Translation, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="4" Padding="6,4" MinHeight="32" MaxHeight="120"
+                                     AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="AI" Binding="{Binding WorkStatus}" Width="72" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border Grid.Row="5" Margin="0,7,0,0" Padding="8,6"
+                Background="{StaticResource PanelBackgroundBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="220"/><ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="220"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="FindLabelText" Grid.Column="0" Text="Найти:" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                <TextBox x:Name="FindTextBox" Grid.Column="1" Padding="7,4" ToolTip="Текст для поиска (Ctrl+F)"/>
+                <Button x:Name="FindPreviousButton" Grid.Column="2" Content="↑" ToolTip="Предыдущее совпадение (Shift+F3)" Style="{StaticResource CompactButton}" Margin="6,0,0,0" Click="FindPrevious_Click"/>
+                <Button x:Name="FindNextButton" Grid.Column="3" Content="↓" ToolTip="Следующее совпадение (F3)" Style="{StaticResource CompactButton}" Margin="4,0,0,0" Click="FindNext_Click"/>
+                <TextBlock x:Name="MatchCountText" Grid.Column="4" Text="Совпадений: 0" VerticalAlignment="Center"
+                           Margin="8,0" Foreground="{StaticResource TextMutedBrush}"/>
+                <TextBlock x:Name="ReplaceLabelText" Grid.Column="5" Text="Заменить на:" VerticalAlignment="Center" Margin="8,0,7,0"/>
+                <TextBox x:Name="ReplaceTextBox" Grid.Column="6" Padding="7,4" ToolTip="Текст для замены (Ctrl+H)"/>
+                <Button x:Name="ReplaceSelectedButton" Grid.Column="7" Content="Заменить в выбранных" Style="{StaticResource CompactButton}"
+                        ToolTip="Заменить совпадения только в выделенных строках"
+                        Margin="6,0,0,0" Click="ReplaceSelected_Click"/>
+                <Button x:Name="ReplaceAllButton" Grid.Column="8" Content="Заменить во всех видимых" Style="{StaticResource CompactButton}"
+                        ToolTip="Заменить совпадения во всех строках текущего фильтра"
+                        Margin="6,0,0,0" Click="ReplaceAll_Click"/>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="6" Margin="0,7,0,0" Padding="8,6"
+                Background="{StaticResource ControlBackgroundBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="AiProgressText" Grid.Column="0" Text="AI-перевод готов к запуску" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="AiOverwriteExistingBox" Grid.Column="1" Content="Переводить заново заполненные"
+                              ToolTip="AI заменит существующий перевод; выключите для сохранения ручных правок"
+                              Margin="12,0" VerticalAlignment="Center"/>
+                    <Button x:Name="AiTranslateMissingButton" Grid.Column="2" Content="Перевести все пропущенные"
+                            ToolTip="Запустить AI-перевод для всех строк без перевода"
+                            Style="{StaticResource CompactButton}" Margin="0,0,6,0" Click="AiTranslateMissing_Click"/>
+                    <Button x:Name="AiRetryButton" Grid.Column="3" Content="Повторить ошибки"
+                            ToolTip="Повторно отправить строки, которые AI не смог перевести"
+                            Style="{StaticResource CompactButton}" Margin="0,0,6,0" IsEnabled="False" Click="AiRetry_Click"/>
+                    <Button x:Name="AiCancelButton" Grid.Column="4" Content="Остановить"
+                            ToolTip="Остановить очередь AI-перевода"
+                            Style="{StaticResource CompactButton}" IsEnabled="False" Click="AiCancel_Click"/>
+                </Grid>
+                <ProgressBar x:Name="AiProgressBar" Grid.Row="1" Height="5" Minimum="0" Maximum="100" Margin="0,6,0,0"/>
+                <ItemsControl x:Name="AiErrorsList" Grid.Row="2" MaxHeight="48" Margin="0,5,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock TextWrapping="Wrap"><Run Text="{Binding Key}" FontWeight="SemiBold"/><Run Text=": "/><Run Text="{Binding Message}"/></TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="7" Margin="0,7,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="TranslationStatsText" Grid.Column="0" Style="{StaticResource MutedText}" VerticalAlignment="Center"
+                       AutomationProperties.LiveSetting="Polite"/>
+            <Button x:Name="CopyOriginalSelectedButton" Grid.Column="1" Content="Взять оригинал для выбранных" Style="{StaticResource CompactButton}"
+                    ToolTip="Скопировать исходный текст в перевод выделенных строк"
+                    Margin="0,0,6,0" Click="CopyTranslationSource_Click"/>
+            <Button x:Name="AiTranslateSelectedButton" Grid.Column="2" Content="Перевести выбранные через AI" Style="{StaticResource CompactButton}"
+                    ToolTip="Отправить в AI только выделенные строки"
+                    Margin="0,0,6,0" Click="AiTranslateSelected_Click"/>
+            <Button x:Name="UndoSelectedButton" Grid.Column="3" Content="Отменить в выбранных" Style="{StaticResource CompactButton}"
+                    ToolTip="Отменить последнюю правку в выделенных строках (Ctrl+Z вне поля ввода)"
+                    Margin="0,0,6,0" Click="UndoSelected_Click"/>
+            <Button x:Name="ClearVisibleButton" Grid.Column="4" Content="Очистить видимые" Style="{StaticResource DangerButton}"
+                    ToolTip="Удалить перевод из всех строк, показанных текущим фильтром"
+                    Margin="0,0,6,0" Click="ClearVisible_Click"/>
+            <Button x:Name="ApplyTranslationsButton" Grid.Column="5" Content="Применить перевод к миссии" Style="{StaticResource PrimaryButton}"
+                    ToolTip="Применить изменения к открытой миссии (Ctrl+Enter)" Click="ApplyTranslations_Click"/>
+        </Grid>
+    </Grid>
+</UserControl>

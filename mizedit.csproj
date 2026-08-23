@@ -11,8 +11,17 @@
     <Resource Include="assets\app-icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+    <Compile Remove=".codex-build\**\*.cs" />
+    <Compile Remove="obj\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MoonSharp" Version="2.0.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GreenLine.Integration" />
+    <InternalsVisibleTo Include="F4E.Translation" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Color x:Key="AppBackground">#0F1418</Color>
+<Color x:Key="PanelBackground">#151C22</Color>
+<Color x:Key="PanelBackgroundAlt">#11181D</Color>
+<Color x:Key="ControlBackground">#0C1216</Color>
+<Color x:Key="ControlBackgroundHover">#1D2A31</Color>
+<Color x:Key="ControlBackgroundPressed">#22343D</Color>
+<Color x:Key="ControlBorder">#2B3A42</Color>
+<Color x:Key="ControlBorderStrong">#3E5A62</Color>
+<Color x:Key="TextPrimary">#E9F1EC</Color>
+<Color x:Key="TextMuted">#A9B8B1</Color>
+<Color x:Key="Accent">#71C6B5</Color>
+<Color x:Key="AccentStrong">#F5C45E</Color>
+<Color x:Key="Danger">#D87575</Color>
+
+<SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackground}"/>
+<SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackground}"/>
+<SolidColorBrush x:Key="PanelBackgroundAltBrush" Color="{StaticResource PanelBackgroundAlt}"/>
+<SolidColorBrush x:Key="ControlBackgroundBrush" Color="{StaticResource ControlBackground}"/>
+<SolidColorBrush x:Key="ControlBackgroundHoverBrush" Color="{StaticResource ControlBackgroundHover}"/>
+<SolidColorBrush x:Key="ControlBackgroundPressedBrush" Color="{StaticResource ControlBackgroundPressed}"/>
+<SolidColorBrush x:Key="ControlBorderBrush" Color="{StaticResource ControlBorder}"/>
+<SolidColorBrush x:Key="ControlBorderStrongBrush" Color="{StaticResource ControlBorderStrong}"/>
+<SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+<SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+<SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/>
+<SolidColorBrush x:Key="AccentStrongBrush" Color="{StaticResource AccentStrong}"/>
+<SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}"/>
+</ResourceDictionary>

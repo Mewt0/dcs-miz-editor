@@ -1,0 +1,131 @@
+<Window x:Class="MizEdit.Views.SaveAnalysisWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Анализ сохранения .miz"
+        Width="1180" Height="760" MinWidth="900" MinHeight="590"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource AppBackgroundBrush}"
+        AutomationProperties.Name="Анализ изменений перед сохранением">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+            <TextBlock x:Name="TitleText" Text="Проверьте изменения перед сохранением"
+                       FontSize="20" FontWeight="SemiBold"/>
+            <TextBlock x:Name="SubtitleText" Margin="0,4,0,0"
+                       Text="Файл миссии не будет изменён, пока вы не подтвердите сохранение."
+                       Foreground="{StaticResource TextMutedBrush}"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Margin="0,0,0,12" Padding="12,9"
+                Background="{StaticResource PanelBackgroundBrush}"
+                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="6">
+            <WrapPanel x:Name="SummaryPanel"
+                       AutomationProperties.Name="Сводка анализа сохранения"
+                       AutomationProperties.LiveSetting="Polite">
+                <TextBlock x:Name="ChangedKeysText" Margin="0,0,22,0" FontWeight="SemiBold"/>
+                <TextBlock x:Name="ModifiedFilesText" Margin="0,0,22,0"/>
+                <TextBlock x:Name="AddedFilesText" Margin="0,0,22,0"/>
+                <TextBlock x:Name="RemovedFilesText" Margin="0,0,22,0"/>
+                <TextBlock x:Name="IssuesText" FontWeight="SemiBold"/>
+            </WrapPanel>
+        </Border>
+
+        <DockPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock x:Name="SeverityLabel" DockPanel.Dock="Left" Text="Показывать замечания:"
+                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox x:Name="SeverityFilter" DockPanel.Dock="Left" Width="210"
+                      SelectionChanged="SeverityFilter_SelectionChanged"
+                      AutomationProperties.Name="Фильтр важности замечаний"/>
+            <TextBlock x:Name="LiveStatusText" DockPanel.Dock="Right" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       AutomationProperties.LiveSetting="Polite"
+                       AutomationProperties.Name="Результат фильтрации"/>
+        </DockPanel>
+
+        <TabControl x:Name="DetailsTabs" Grid.Row="3"
+                    AutomationProperties.Name="Подробности изменений">
+            <TabItem x:Name="TranslationsTab" Header="Переводы">
+                <DataGrid x:Name="TranslationsGrid" ItemsSource="{Binding TranslationRows}"
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          IsReadOnly="True" RowHeaderWidth="0" SelectionUnit="FullRow"
+                          EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True"
+                          AutomationProperties.Name="Изменённые DictKey">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn x:Name="KeyColumn" Header="DictKey" Binding="{Binding DictKey}" Width="240"/>
+                        <DataGridTextColumn x:Name="OriginalColumn" Header="Оригинал" Binding="{Binding SourceText}" Width="*" MinWidth="190"/>
+                        <DataGridTextColumn x:Name="CurrentColumn" Header="Перевод" Binding="{Binding CurrentText}" Width="2*" MinWidth="260"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem x:Name="ArchiveTab" Header="Файлы архива">
+                <DataGrid x:Name="ArchiveGrid" ItemsSource="{Binding ArchiveRows}"
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          IsReadOnly="True" RowHeaderWidth="0" SelectionUnit="FullRow"
+                          EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True"
+                          AutomationProperties.Name="Изменения файлов архива">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn x:Name="PathColumn" Header="Путь в архиве" Binding="{Binding Path}" Width="*" MinWidth="360"/>
+                        <DataGridTextColumn x:Name="FileChangeColumn" Header="Изменение" Binding="{Binding ChangeText}" Width="170"/>
+                        <DataGridTextColumn x:Name="FileDetailsColumn" Header="Сведения" Binding="{Binding Details}" Width="2*" MinWidth="240"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem x:Name="QualityTab" Header="Проверка качества">
+                <DataGrid x:Name="QualityGrid" ItemsSource="{Binding FilteredQualityRows}"
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          IsReadOnly="True" RowHeaderWidth="0" SelectionUnit="FullRow"
+                          EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True"
+                          AutomationProperties.Name="Замечания проверки качества">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn x:Name="SeverityColumn" Header="Важность" Binding="{Binding SeverityText}" Width="130"/>
+                        <DataGridTextColumn x:Name="QualityKeyColumn" Header="DictKey" Binding="{Binding DictKey}" Width="210"/>
+                        <DataGridTextColumn x:Name="MessageColumn" Header="Проблема" Binding="{Binding Message}" Width="2*" MinWidth="260"/>
+                        <DataGridTextColumn x:Name="QualitySourceColumn" Header="Оригинал" Binding="{Binding SourceText}" Width="*" MinWidth="170"/>
+                        <DataGridTextColumn x:Name="QualityTranslationColumn" Header="Перевод" Binding="{Binding TranslationText}" Width="*" MinWidth="170"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+
+        <Grid Grid.Row="4" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <CheckBox x:Name="ConfirmCriticalCheckBox"
+                          Content="Я понимаю риски и хочу сохранить несмотря на критические ошибки"
+                          Visibility="Collapsed" Margin="0,0,12,4"
+                          Checked="ConfirmCritical_Changed" Unchecked="ConfirmCritical_Changed"
+                          AutomationProperties.Name="Подтвердить сохранение с критическими ошибками"/>
+                <TextBlock x:Name="SafetyText" Foreground="{StaticResource TextMutedBrush}"
+                           Text="Отмена оставит исходный файл миссии без изменений."
+                           AutomationProperties.LiveSetting="Polite"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button x:Name="CancelButton" Content="Отмена" Style="{StaticResource CompactButton}"
+                        IsCancel="True" Click="Cancel_Click"/>
+                <Button x:Name="SaveButton" Content="Сохранить" Margin="8,0,0,0"
+                        Style="{StaticResource PrimaryButton}" Click="Save_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

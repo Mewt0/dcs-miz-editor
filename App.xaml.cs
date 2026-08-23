@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Windows;
+using MizEdit.Core;
 
 namespace MizEdit
 {
@@ -9,6 +10,8 @@ namespace MizEdit
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            UILocalization.Initialize();
 
             var window = new MainWindow();
             window.Show();

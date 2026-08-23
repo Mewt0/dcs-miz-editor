@@ -42,6 +42,18 @@ radio_debug.txt
 # Local scratch/test artifacts
 work/
 outputs/
+.codex-build/
+.external/
+.python/
+tts_data/
+F-16C_50_v2.0/
+
+# Local executables and machine-specific state
+/*.exe
+/install_log.txt
+/translation_tool_settings.json
+/translation_tool_ui.ini
+/*recovery-codes*.txt
 
 # Others
 *.DS_Store
